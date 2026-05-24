@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Tornado Chasing - Охота за торнадо</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        #menuScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 20px;
+        }
+        #menuScreen h1 {
+            font-size: 2.5rem;
+            color: #ff8c00;
+            text-shadow: 0 0 30px rgba(255,140,0,0.5);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #menuScreen .subtitle {
+            color: #aaa;
+            font-size: 1rem;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        .menu-btn {
+            width: 250px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .play-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 5px 20px rgba(231,76,60,0.4);
+        }
+        .play-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(231,76,60,0.6);
+        }
+        .shop-btn-menu {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            box-shadow: 0 5px 20px rgba(243,156,18,0.4);
+        }
+        .shop-btn-menu:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(243,156,18,0.6);
+        }
+        .admin-btn-menu {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            box-shadow: 0 5px 20px rgba(155,89,182,0.4);
+            font-size: 0.9rem;
+        }
+        .admin-btn-menu:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(155,89,182,0.6);
+        }
+        .money-display-menu {
+            color: #ffd700;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 10px;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+        
+        #shopScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 15px;
+        }
+        #shopScreen h2 {
+            color: #ff8c00;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .vehicle-card {
+            background: rgba(30,30,50,0.9);
+            border: 2px solid #444;
+            border-radius: 15px;
+            padding: 15px;
+            width: 280px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .vehicle-card:hover {
+            border-color: #ff8c00;
+            background: rgba(40,40,60,0.9);
+        }
+        .vehicle-card.owned {
+            border-color: #2ecc71;
+            background: rgba(30,50,30,0.9);
+        }
+        .vehicle-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.3);
+        }
+        .vehicle-info {
+            color: #fff;
+        }
+        .vehicle-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .vehicle-stats {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+        .vehicle-price {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .vehicle-owned-text {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            background: #777;
+        }
+        
+        #adminScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            gap: 15px;
+        }
+        #adminScreen h2 {
+            color: #9b59b6;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        .admin-input {
+            background: #1a1a2e;
+            border: 2px solid #9b59b6;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            width: 200px;
+            text-align: center;
+        }
+        .admin-input::placeholder {
+            color: #666;
+        }
+        .admin-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 3px;
+            transition: 0.2s;
+        }
+        .admin-btn:hover {
+            background: #8e44ad;
+            transform: scale(1.05);
+        }
+        .admin-btn.gold {
+            background: #f39c12;
+            color: #000;
+            font-weight: bold;
+        }
+        .admin-btn.gold:hover {
+            background: #ffd700;
+        }
+        .admin-section {
+            background: rgba(30,30,50,0.7);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #555;
+            width: 280px;
+        }
+        .admin-section h3 {
+            color: #ffd700;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 0.8rem;
+        }
+        .success-msg {
+            color: #2ecc71;
+            font-size: 0.8rem;
+        }
+        
+        #gameScreen {
+            display: none;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1000px;
+            max-height: 700px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        
+        #joystickZone {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 130px;
+            height: 130px;
+            z-index: 10;
+        }
+        #joystickBase {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 3px solid rgba(255,255,255,0.4);
+            position: relative;
+        }
+        #joystickThumb {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: rgba(255,140,0,0.8);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(255,140,0,0.5);
+        }
+        
+        #probeBtn {
+            position: absolute;
+            bottom: 50px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e74c3c;
+            border: 3px solid #fff;
+            color: white;
+            font-weight: bold;
+            font-size: 0.7rem;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px rgba(231,76,60,0.6);
+        }
+        
+        #menuBtn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+        }
+        #menuBtn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .top-panel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            pointer-events: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .info-badge {
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .money-badge {
+            background: rgba(0,0,0,0.8);
+            color: #ffd700;
+            border: 2px solid #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div id="menuScreen">
+        <h1>🌪️ TORNADO<br>CHASING</h1>
+        <div class="subtitle">Охота за торнадо</div>
+        <button class="menu-btn play-btn" id="playBtn">🎮 ИГРАТЬ</button>
+        <button class="menu-btn shop-btn-menu" id="shopBtnMenu">🛒 МАГАЗИН</button>
+        <button class="menu-btn admin-btn-menu" id="adminBtnMenu">🔧 АДМИН</button>
+        <div class="money-display-menu">💰 $<span id="menuMoney">0</span></div>
+    </div>
+    
+    <div id="shopScreen">
+        <h2>🛒 МАГАЗИН МАШИН</h2>
+        <div id="vehicleList"></div>
+        <div class="money-display-menu">💰 Доступно: $<span id="shopMoney">0</span></div>
+        <button class="back-btn" id="backFromShop">↩ НАЗАД В МЕНЮ</button>
+    </div>
+    
+    <div id="adminScreen">
+        <h2>🔧 АДМИН-ПАНЕЛЬ</h2>
+        <p style="color:#aaa; font-size:0.8rem;">Введите код доступа</p>
+        <input type="password" class="admin-input" id="adminCode" placeholder="Код доступа">
+        <button class="admin-btn" id="adminLogin">ВОЙТИ</button>
+        <p class="error-msg" id="adminError" style="display:none;">Неверный код!</p>
+        
+        <div id="adminControls" style="display:none;">
+            <div class="admin-section">
+                <h3>💰 Деньги</h3>
+                <button class="admin-btn gold" onclick="addMoney(1000)">+$1,000</button>
+                <button class="admin-btn gold" onclick="addMoney(10000)">+$10,000</button>
+                <button class="admin-btn gold" onclick="addMoney(100000)">+$100,000</button>
+            </div>
+            <div class="admin-section">
+                <h3>🚗 Выдать машину</h3>
+                <button class="admin-btn" onclick="giveVehicle('tornadoAttack')">Tornado Attack</button>
+                <button class="admin-btn" onclick="giveVehicle('dom1')">Доминатор 1</button>
+                <button class="admin-btn" onclick="giveVehicle('tiv1')">TIV-1</button>
+                <button class="admin-btn" onclick="giveVehicle('dom2')">Доминатор 2</button>
+                <button class="admin-btn" onclick="giveVehicle('dom3')">Доминатор 3</button>
+                <button class="admin-btn" onclick="giveVehicle('tiv2')">TIV-2</button>
+            </div>
+            <div class="admin-section">
+                <h3>⭐ Админ-машина</h3>
+                <button class="admin-btn gold" onclick="giveVehicle('admin')">ADMIN TANK (Бессмертие)</button>
+            </div>
+            <p class="success-msg" id="adminMsg"></p>
+        </div>
+        
+        <button class="back-btn" id="backFromAdmin">↩ НАЗАД В МЕНЮ</button>
+    </div>
+    
+    <div id="gameScreen">
+        <canvas id="gameCanvas"></canvas>
+        <button id="menuBtn">🏠 МЕНЮ</button>
+        <div class="top-panel">
+            <div class="info-badge">🌪️ <span id="scoreDisplay">0</span></div>
+            <div class="info-badge money-badge">💰 $<span id="moneyDisplay">0</span></div>
+            <div class="info-badge">🚗 <span id="vehicleDisplay">Tornado Attack</span></div>
+        </div>
+        <div id="joystickZone">
+            <div id="joystickBase">
+                <div id="joystickThumb"></div>
+            </div>
+        </div>
+        <button id="probeBtn">📡<br>ЗОНД</button>
+    </div>
+
+    <script>
+        (function() {
+            // ---- Экраны ----
+            const menuScreen = document.getElementById('menuScreen');
+            const shopScreen = document.getElementById('shopScreen');
+            const adminScreen = document.getElementById('adminScreen');
+            const gameScreen = document.getElementById('gameScreen');
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // ---- Сохранение ----
+            function saveGame() {
+                const data = {
+                    money: money,
+                    ownedVehicles: ownedVehicles,
+                    currentVehicle: currentVehicle
+                };
+                localStorage.setItem('tornadoChasingSave', JSON.stringify(data));
+            }
+            
+            function loadGame() {
+                const saved = localStorage.getItem('tornadoChasingSave');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    money = data.money || 0;
+                    ownedVehicles = data.ownedVehicles || ['tornadoAttack'];
+                    currentVehicle = data.currentVehicle || 'tornadoAttack';
+                }
+            }
+            
+            // ---- Данные игры ----
+            let W, H;
+            const WORLD_W = 3000;
+            const WORLD_H = 2200;
+            
+            function resizeCanvas() {
+                const rect = gameScreen.getBoundingClientRect();
+                W = rect.width;
+                H = rect.height;
+                canvas.width = W;
+                canvas.height = H;
+            }
+            
+            let camera = { x: 0, y: 0 };
+            
+            let player = {
+                x: WORLD_W/2,
+                y: WORLD_H/2,
+                radius: 16,
+                angle: 0,
+                isEvacuating: false,
+                evacuationTimer: 0
+            };
+            
+            const vehicleStats = {
+                tornadoAttack: {
+                    name: 'Tornado Attack', speed: 3.5, armor: 0.5, color: '#e74c3c', darkColor: '#c0392b', radius: 16, price: 0,
+                    evacuatedBy: ['EF1', 'EF2', 'EF3', 'EF4', 'EF5'],
+                    desc: 'Первый перехватчик (С. Грин)'
+                },
+                dom1: { 
+                    name: 'Доминатор 1', speed: 3.8, armor: 1, color: '#e74c3c', darkColor: '#c0392b', radius: 18, price: 10000,
+                    evacuatedBy: ['EF1', 'EF2', 'EF3', 'EF4', 'EF5'],
+                    desc: 'Базовый перехватчик'
+                },
+                tiv1: { 
+                    name: 'TIV-1', speed: 3.2, armor: 3, color: '#ecf0f1', darkColor: '#bdc3c7', radius: 20, price: 15000,
+                    evacuatedBy: ['EF2', 'EF3', 'EF4', 'EF5'],
+                    desc: 'Тяжёлая броня'
+                },
+                dom2: { 
+                    name: 'Доминатор 2', speed: 4.8, armor: 2, color: '#95a5a6', darkColor: '#7f8c8d', radius: 19, price: 25000,
+                    evacuatedBy: ['EF2', 'EF3', 'EF4', 'EF5'],
+                    desc: 'Максимальная скорость'
+                },
+                dom3: { 
+                    name: 'Доминатор 3', speed: 3.4, armor: 4, color: '#2c3e50', darkColor: '#1a252f', radius: 22, price: 40000,
+                    evacuatedBy: ['EF4', 'EF5'],
+                    desc: 'Усиленная защита'
+                },
+                tiv2: { 
+                    name: 'TIV-2', speed: 3.6, armor: 7, color: '#7f8c8d', darkColor: '#6c7a89', radius: 25, price: 60000,
+                    evacuatedBy: ['EF5'],
+                    desc: 'Абсолютная броня'
+                },
+                admin: {
+                    name: 'ADMIN TANK', speed: 4.5, armor: 999, color: '#2e7d32', darkColor: '#1b5e20', radius: 30, price: 0,
+                    evacuatedBy: [],
+                    desc: 'ЗЕЛЁНЫЙ ТАНК (Бессмертный)'
+                }
+            };
+            
+            let currentVehicle = 'tornadoAttack';
+            let ownedVehicles = ['tornadoAttack'];
+            let money = 0;
+            let score = 0;
+            let gameRunning = false;
+            
+            // ---- Админ-панель ----
+            let adminLoggedIn = false;
+            
+            document.getElementById('adminLogin').addEventListener('click', () => {
+                const code = document.getElementById('adminCode').value.toLowerCase();
+                if (code === 'шторм' || code === 'storm') {
+                    adminLoggedIn = true;
+                    document.getElementById('adminControls').style.display = 'block';
+                    document.getElementById('adminError').style.display = 'none';
+                    document.getElementById('adminMsg').textContent = '✅ Доступ разрешён!';
+                } else {
+                    document.getElementById('adminError').style.display = 'block';
+                    document.getElementById('adminControls').style.display = 'none';
+                }
+            });
+            
+            window.addMoney = function(amount) {
+                if (!adminLoggedIn) return;
+                money += amount;
+                saveGame();
+                updateUI();
+                document.getElementById('adminMsg').textContent = `✅ Добавлено $${amount.toLocaleString()}!`;
+            };
+            
+            window.giveVehicle = function(type) {
+                if (!adminLoggedIn) return;
+                if (!ownedVehicles.includes(type)) {
+                    ownedVehicles.push(type);
+                }
+                currentVehicle = type;
+                saveGame();
+                updateUI();
+                updateShopUI();
+                document.getElementById('adminMsg').textContent = `✅ Машина "${vehicleStats[type].name}" выдана!`;
+            };
+            
+            // ---- Джойстик ----
+            let joystickActive = false;
+            let joystickX = 0, joystickY = 0;
+            
+            const joystickZone = document.getElementById('joystickZone');
+            const joystickThumb = document.getElementById('joystickThumb');
+            const joystickBase = document.getElementById('joystickBase');
+            
+            function handleJoystickStart(e) {
+                e.preventDefault();
+                if (player.isEvacuating) return;
+                joystickActive = true;
+                updateJoystick(e);
+            }
+            function handleJoystickMove(e) {
+                if (!joystickActive || player.isEvacuating) return;
+                e.preventDefault();
+                updateJoystick(e);
+            }
+            function handleJoystickEnd(e) {
+                e.preventDefault();
+                joystickActive = false;
+                joystickX = 0;
+                joystickY = 0;
+                joystickThumb.style.transform = 'translate(-50%, -50%)';
+            }
+            
+            function updateJoystick(e) {
+                const touch = e.touches ? e.touches[0] : e;
+                const rect = joystickBase.getBoundingClientRect();
+                const cx = rect.left + rect.width/2;
+                const cy = rect.top + rect.height/2;
+                let dx = touch.clientX - cx;
+                let dy = touch.clientY - cy;
+                const maxDist = 45;
+                const dist = Math.sqrt(dx*dx+dy*dy);
+                if (dist > maxDist) {
+                    dx = dx / dist * maxDist;
+                    dy = dy / dist * maxDist;
+                }
+                joystickX = dx / maxDist;
+                joystickY = dy / maxDist;
+                joystickThumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            }
+            
+            joystickZone.addEventListener('touchstart', handleJoystickStart);
+            joystickZone.addEventListener('touchmove', handleJoystickMove);
+            joystickZone.addEventListener('touchend', handleJoystickEnd);
+            joystickZone.addEventListener('mousedown', handleJoystickStart);
+            window.addEventListener('mousemove', (e) => { if (joystickActive) handleJoystickMove(e); });
+            window.addEventListener('mouseup', handleJoystickEnd);
+            
+            const keys = {};
+            window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+            
+            // ---- Зонды ----
+            let probes = [];
+            const MAX_PROBES = 3;
+            
+            document.getElementById('probeBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                deployProbe();
+            });
+            document.getElementById('probeBtn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                deployProbe();
+            });
+            
+            function deployProbe() {
+                if (probes.length >= MAX_PROBES || player.isEvacuating) return;
+                probes.push({
+                    x: player.x + Math.cos(player.angle) * 40,
+                    y: player.y + Math.sin(player.angle) * 40,
+                    deployed: Date.now(),
+                    collected: false
+                });
+            }
+            
+            // ---- Мир ----
+            let trees = [];
+            let houses = [];
+            let roads = [];
+            
+            function generateRoads() {
+                roads = [];
+                for (let y = 250; y < WORLD_H; y += 400) roads.push({x1:0,y1:y,x2:WORLD_W,y2:y,width:32});
+                for (let x = 300; x < WORLD_W; x += 500) roads.push({x1:x,y1:0,x2:x,y2:WORLD_H,width:32});
+                roads.push({x1:100,y1:100,x2:WORLD_W-300,y2:WORLD_H-300,width:30});
+                roads.push({x1:WORLD_W-200,y1:200,x2:200,y2:WORLD_H-200,width:30});
+                roads.push({x1:WORLD_W/2,y1:50,x2:WORLD_W/2,y2:WORLD_H-50,width:34});
+            }
+            
+            function generateWorldObjects() {
+                trees = [];
+                houses = [];
+                for (let i = 0; i < 250; i++) {
+                    trees.push({
+                        x: Math.random() * WORLD_W,
+                        y: Math.random() * WORLD_H,
+                        radius: 8 + Math.random() * 18,
+                        type: Math.random() < 0.7 ? 'green' : 'pine'
+                    });
+                }
+                for (let i = 0; i < 50; i++) {
+                    houses.push({
+                        x: Math.random() * WORLD_W,
+                        y: Math.random() * WORLD_H,
+                        w: 30 + Math.random() * 45,
+                        h: 25 + Math.random() * 40,
+                        color: ['#e8d5b7','#d4c4a8','#c9b99a','#b8a88a','#f5deb3'][Math.floor(Math.random()*5)]
+                    });
+                }
+                for (let r of roads) {
+                    for (let j = 0; j < 4; j++) {
+                        const t = Math.random();
+                        const hx = r.x1 + (r.x2-r.x1)*t + (Math.random()-0.5)*120;
+                        const hy = r.y1 + (r.y2-r.y1)*t + (Math.random()-0.5)*100;
+                        houses.push({
+                            x: Math.max(30, Math.min(WORLD_W-30, hx)),
+                            y: Math.max(30, Math.min(WORLD_H-30, hy)),
+                            w: 30+Math.random()*40,
+                            h: 25+Math.random()*35,
+                            color: ['#f5deb3','#e8d5b7','#d2b48c'][Math.floor(Math.random()*3)]
+                        });
+                    }
+                }
+            }
+            
+            function isOnRoad(px, py) {
+                for (let r of roads) {
+                    const dx=r.x2-r.x1, dy=r.y2-r.y1;
+                    const len=Math.sqrt(dx*dx+dy*dy);
+                    if(len===0) continue;
+                    const ux=dx/len, uy=dy/len;
+                    const proj=(px-r.x1)*ux+(py-r.y1)*uy;
+                    if(proj<0||proj>len) continue;
+                    const perpX=r.x1+ux*proj, perpY=r.y1+uy*proj;
+                    if(Math.sqrt((px-perpX)**2+(py-perpY)**2) < r.width/2+5) return true;
+                }
+                return false;
+            }
+            
+            // ---- Торнадо ----
+            let tornados = [];
+            const MAX_TORNADOS = 10;
+            let frameCounter = 0;
+            
+            const tornadoCategories = {
+                EF1:{minRadius:16,maxRadius:24,speed:0.5,color:'#4fc3f7',points:10,damage:1,money:500},
+                EF2:{minRadius:22,maxRadius:34,speed:0.8,color:'#81c784',points:25,damage:2,money:1500},
+                EF3:{minRadius:32,maxRadius:46,speed:1.1,color:'#ffb74d',points:50,damage:3,money:3500},
+                EF4:{minRadius:42,maxRadius:58,speed:1.5,color:'#e57373',points:100,damage:5,money:8000},
+                EF5:{minRadius:52,maxRadius:75,speed:1.9,color:'#ce93d8',points:200,damage:8,money:18000}
+            };
+            
+            class Tornado {
+                constructor(x,y,category){
+                    this.x=x; this.y=y; this.category=category;
+                    const c=tornadoCategories[category];
+                    this.radius=c.minRadius+Math.random()*(c.maxRadius-c.minRadius);
+                    this.speed=c.speed+Math.random()*0.5;
+                    this.angle=Math.random()*Math.PI*2;
+                    this.rotOff=Math.random()*Math.PI*2;
+                    this.points=c.points; this.damage=c.damage; this.color=c.color; this.money=c.money;
+                }
+                
+                update(){
+                    this.x+=Math.cos(this.angle)*this.speed;
+                    this.y+=Math.sin(this.angle)*this.speed;
+                    if(this.x-this.radius<30){this.x=this.radius+30;this.angle=Math.PI-this.angle;}
+                    if(this.x+this.radius>WORLD_W-30){this.x=WORLD_W-this.radius-30;this.angle=Math.PI-this.angle;}
+                    if(this.y-this.radius<30){this.y=this.radius+30;this.angle=-this.angle;}
+                    if(this.y+this.radius>WORLD_H-30){this.y=WORLD_H-this.radius-30;this.angle=-this.angle;}
+                    this.angle+=(Math.random()-0.5)*0.05;
+                    
+                    if (!player.isEvacuating) {
+                        const dx=player.x-this.x, dy=player.y-this.y;
+                        const dist=Math.sqrt(dx*dx+dy*dy);
+                        const st=vehicleStats[currentVehicle];
+                        
+                        if(dist < this.radius + player.radius + 10) {
+                            if (st.evacuatedBy.includes(this.category)) {
+                                player.isEvacuating = true;
+                                player.evacuationTimer = 60;
+                                player.x = 100 + Math.random() * (WORLD_W - 200);
+                                player.y = 100 + Math.random() * (WORLD_H - 200);
+                            } else {
+                                const pushAngle = Math.atan2(dy, dx);
+                                player.x += Math.cos(pushAngle) * this.damage * 0.3;
+                                player.y += Math.sin(pushAngle) * this.damage * 0.3;
+                            }
+                        }
+                    }
+                    
+                    for (let p of probes) {
+                        if (p.collected) continue;
+                        const pdx = p.x - this.x, pdy = p.y - this.y;
+                        if (Math.sqrt(pdx*pdx+pdy*pdy) < this.radius + 25) {
+                            p.collected = true;
+                            money += this.money;
+                            score += this.points;
+                            updateUI();
+                            saveGame();
+                        }
+                    }
+                }
+                
+                draw(ctx, camX, camY){
+                    const sx=this.x-camX, sy=this.y-camY;
+                    if(sx<-150||sx>W+150||sy<-150||sy>H+150) return;
+                    
+                    ctx.save(); 
+                    ctx.translate(sx, sy);
+                    
+                    const time = Date.now() / 160;
+                    const spin = time + this.rotOff;
+                    
+                    ctx.save();
+                    ctx.translate(0, this.radius * 0.9);
+                    ctx.scale(1.3, 0.4);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius * 0.9, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    for (let i = 6; i >= 0; i--) {
+                        const layerRadius = this.radius * (0.2 + i * 0.13);
+                        const alpha = 0.15 + i * 0.07;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, layerRadius, 0, Math.PI * 2);
+                        const gradient = ctx.createRadialGradient(0, 0, layerRadius * 0.1, 0, 0, layerRadius);
+                        gradient.addColorStop(0, this.color);
+                        gradient.addColorStop(0.5, this.color + 'aa');
+                        gradient.addColorStop(1, this.color + '00');
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                    }
+                    
+                    for (let j = 0; j < 10; j++) {
+                        const lineAngle = spin + (j * Math.PI * 2 / 10);
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(lineAngle) * this.radius * 0.2, Math.sin(lineAngle) * this.radius * 0.2);
+                        const controlAngle = lineAngle + 0.7;
+                        const cpRadius = this.radius * 0.55;
+                        const cpX = Math.cos(controlAngle) * cpRadius;
+                        const cpY = Math.sin(controlAngle) * cpRadius;
+                        const endX = Math.cos(lineAngle + 0.4) * this.radius * 0.88;
+                        const endY = Math.sin(lineAngle + 0.4) * this.radius * 0.88;
+                        ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+                        ctx.strokeStyle = `rgba(255, 255, 255, 0.4)`;
+                        ctx.lineWidth = 1.2 + j * 0.1;
+                        ctx.stroke();
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius * 0.25, 0, Math.PI * 2);
+                    const coreGrad = ctx.createRadialGradient(0, 0, this.radius * 0.05, 0, 0, this.radius * 0.3);
+                    coreGrad.addColorStop(0, '#1a1a1a');
+                    coreGrad.addColorStop(0.8, this.color);
+                    ctx.fillStyle = coreGrad;
+                    ctx.fill();
+                    
+                    for (let k = 0; k < 12; k++) {
+                        const particleAngle = spin * 2.5 + k * 1.2;
+                        const particleDist = this.radius * (0.4 + Math.sin(spin * 4 + k) * 0.3);
+                        const px = Math.cos(particleAngle) * particleDist;
+                        const py = Math.sin(particleAngle) * particleDist;
+                        ctx.beginPath();
+                        ctx.arc(px, py, 1.5 + Math.random() * 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(220, 220, 220, 0.9)';
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                    
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 11px "Segoe UI"';
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = '#000';
+                    ctx.shadowBlur = 4;
+                    ctx.fillText(this.category + ' $' + this.money, sx, sy - this.radius - 14);
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            function spawnTornado(){
+                if(tornados.length>=MAX_TORNADOS) return;
+                const cats=['EF1','EF1','EF2','EF2','EF3','EF3','EF4','EF5'];
+                const cat=cats[Math.floor(Math.random()*cats.length)];
+                const s=Math.floor(Math.random()*4); let x,y;
+                switch(s){case 0:x=Math.random()*WORLD_W;y=40;break;case 1:x=Math.random()*WORLD_W;y=WORLD_H-40;break;case 2:x=40;y=Math.random()*WORLD_H;break;case 3:x=WORLD_W-40;y=Math.random()*WORLD_H;break;}
+                tornados.push(new Tornado(x,y,cat));
+            }
+            
+            // ---- Отрисовка ----
+            function drawWorld(ctx, camX, camY){
+                ctx.fillStyle='#4a6b1a'; ctx.fillRect(0,0,W,H);
+                const sx=-(camX%70), sy=-(camY%70);
+                ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=0.5;
+                for(let x=sx;x<W;x+=70) ctx.strokeRect(x,0,0,H);
+                for(let y=sy;y<H;y+=70) ctx.strokeRect(0,y,W,0);
+                ctx.fillStyle='rgba(90,65,30,0.25)';
+                for(let i=0;i<35;i++){const bx=((i*173+50)%WORLD_W)-camX,by=((i*241+80)%WORLD_H)-camY;ctx.beginPath();ctx.arc(bx,by,35+(i%55),0,Math.PI*2);ctx.fill();}
+                for(let h of houses){
+                    const hx=h.x-camX, hy=h.y-camY;
+                    if(hx<-80||hx>W+80||hy<-80||hy>H+80) continue;
+                    ctx.fillStyle=h.color; ctx.fillRect(hx-h.w/2,hy-h.h/2,h.w,h.h);
+                    ctx.fillStyle='#c0392b'; ctx.fillRect(hx-h.w/4,hy-h.h/2-h.h*0.35,h.w/2,h.h*0.35);
+                    ctx.fillStyle='#8b4513'; ctx.fillRect(hx-h.w/2+5,hy+h.h/2-8,h.w-10,6);
+                }
+                for(let t of trees){
+                    const tx=t.x-camX, ty=t.y-camY;
+                    if(tx<-40||tx>W+40||ty<-40||ty>H+40) continue;
+                    ctx.fillStyle='#5d4037'; ctx.fillRect(tx-3,ty,6,t.radius*1.4);
+                    ctx.fillStyle=t.type==='green'?'#2e7d32':'#1b5e20';
+                    ctx.beginPath(); ctx.arc(tx,ty-t.radius*0.3,t.radius,0,Math.PI*2); ctx.fill();
+                    ctx.fillStyle=t.type==='green'?'#388e3c':'#2e7d32';
+                    ctx.beginPath(); ctx.arc(tx-2,ty-t.radius*0.5,t.radius*0.8,0,Math.PI*2); ctx.fill();
+                }
+                for(let r of roads){
+                    ctx.beginPath(); ctx.moveTo(r.x1-camX,r.y1-camY); ctx.lineTo(r.x2-camX,r.y2-camY);
+                    ctx.strokeStyle='#555'; ctx.lineWidth=r.width; ctx.stroke();
+                    ctx.strokeStyle='#777'; ctx.lineWidth=r.width-6; ctx.stroke();
+                    ctx.setLineDash([18,18]); ctx.strokeStyle='#ffdd57'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+                }
+                ctx.strokeStyle='#ff0000'; ctx.lineWidth=5; ctx.strokeRect(-camX,-camY,WORLD_W,WORLD_H);
+            }
+            
+            function drawPlayer(ctx, camX, camY){
+                if (player.isEvacuating && Math.floor(Date.now() / 100) % 2 === 0) return;
+                
+                const sx=player.x-camX, sy=player.y-camY;
+                const st=vehicleStats[currentVehicle];
+                player.radius = st.radius;
+                
+                ctx.save(); 
+                ctx.translate(sx, sy); 
+                ctx.rotate(player.angle);
+                
+                if (player.isEvacuating) {
+                    ctx.shadowColor = '#ff8c00';
+                    ctx.shadowBlur = 25;
+                }
+                
+                if (currentVehicle === 'admin') {
+                    // Админ-машина — ЗЕЛЁНЫЙ ТАНК с гусеницами
+                    
+                    // Гусеницы
+                    const trackWidth = st.radius * 0.7;
+                    const trackHeight = st.radius * 0.5;
+                    const trackLength = st.radius * 3.2;
+                    
+                    // Левая гусеница
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(-st.radius*1.6, -st.radius*0.9, trackLength, trackHeight);
+                    // Траки на левой гусенице
+                    ctx.strokeStyle = '#444';
+                    ctx.lineWidth = 2;
+                    for (let i = -st.radius*1.4; i < st.radius*1.6; i += st.radius*0.5) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, -st.radius*0.9);
+                        ctx.lineTo(i, -st.radius*0.4);
+                        ctx.stroke();
+                    }
+                    
+                    // Правая гусеница
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(-st.radius*1.6, st.radius*0.4, trackLength, trackHeight);
+                    // Траки на правой гусенице
+                    for (let i = -st.radius*1.4; i < st.radius*1.6; i += st.radius*0.5) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, st.radius*0.4);
+                        ctx.lineTo(i, st.radius*0.9);
+                        ctx.stroke();
+                    }
+                    
+                    // Колёса гусениц
+                    ctx.fillStyle = '#333';
+                    for (let i = -1; i <= 1; i += 0.5) {
+                        ctx.beginPath();
+                        ctx.arc(i * st.radius * 1.1, -st.radius*0.65, st.radius*0.35, 0, Math.PI*2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(i * st.radius * 1.1, st.radius*0.65, st.radius*0.35, 0, Math.PI*2);
+                        ctx.fill();
+                    }
+                    
+                    // Корпус танка
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.5, -st.radius*0.7, st.radius*3, st.radius*1.4);
+                    
+                    // Тёмная полоса
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.3, -st.radius*0.5, st.radius*2.6, st.radius*1.0);
+                    
+                    // Башня
+                    ctx.fillStyle = st.color;
+                    ctx.beginPath();
+                    ctx.arc(0, -st.radius*0.2, st.radius*0.8, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // Ствол пушки
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(st.radius*0.6, -st.radius*0.35, st.radius*1.8, st.radius*0.3);
+                    
+                    // Дульный тормоз
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(st.radius*2.2, -st.radius*0.45, st.radius*0.3, st.radius*0.5);
+                    
+                    // Люк
+                    ctx.fillStyle = st.darkColor;
+                    ctx.beginPath();
+                    ctx.arc(-st.radius*0.3, -st.radius*0.5, st.radius*0.25, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    // Звезда на башне
+                    ctx.fillStyle = '#ffd700';
+                    ctx.font = `${st.radius*0.6}px "Segoe UI"`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⭐', 0, -st.radius*0.1);
+                    
+                    // Сияние
+                    ctx.shadowColor = '#4caf50';
+                    ctx.shadowBlur = 15;
+                    ctx.strokeStyle = '#4caf50';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-st.radius*1.5, -st.radius*0.7, st.radius*3, st.radius*1.4);
+                    
+                } else if (currentVehicle === 'tornadoAttack') {
+                    // Tornado Attack — КРАСНЫЙ
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-st.radius*1.3, -st.radius*0.9, st.radius*2.6, st.radius*1.8);
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.4, -st.radius*0.8, st.radius*2.8, st.radius*1.4);
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.1, -st.radius*0.6, st.radius*2.2, st.radius*0.9);
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(-st.radius*1.4, st.radius*0.6, st.radius*0.3, st.radius*0.4);
+                    ctx.fillRect(st.radius*1.1, st.radius*0.6, st.radius*0.3, st.radius*0.4);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 8px "Segoe UI"';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('TA-1', 0, st.radius*0.2);
+                } else if (currentVehicle === 'dom1') {
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.5, -st.radius, st.radius*3, st.radius*1.6);
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.2, -st.radius*0.9, st.radius*2.4, st.radius*0.4);
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-st.radius*1.5, -st.radius, st.radius*3, st.radius*1.6);
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.fillRect(st.radius*1.2, -st.radius*0.8, st.radius*0.3, st.radius*0.2);
+                    ctx.fillRect(st.radius*1.2, st.radius*0.4, st.radius*0.3, st.radius*0.2);
+                } else if (currentVehicle === 'tiv1') {
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.6, -st.radius*0.9, st.radius*3.2, st.radius*1.8);
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.0, -st.radius*0.7, st.radius*2.0, st.radius*1.3);
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-st.radius*1.5, -st.radius*0.8, st.radius*3, st.radius*1.6);
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.fillRect(-st.radius*0.4, -st.radius*1.4, st.radius*0.8, st.radius*0.5);
+                    ctx.beginPath();
+                    ctx.arc(0, -st.radius*1.4, st.radius*0.3, 0, Math.PI*2);
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.fill();
+                } else if (currentVehicle === 'dom2') {
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.5, -st.radius*0.9, st.radius*3, st.radius*1.8);
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.0, -st.radius*0.7, st.radius*2.0, st.radius*1.3);
+                    ctx.fillStyle = '#6c7a89';
+                    ctx.fillRect(-st.radius*0.8, -st.radius*1.4, st.radius*1.6, st.radius*0.5);
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(-st.radius*1.5, -st.radius*0.9, st.radius*3, st.radius*1.8);
+                } else if (currentVehicle === 'dom3') {
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.5, -st.radius*1.0, st.radius*3, st.radius*2.0);
+                    ctx.fillStyle = '#34495e';
+                    ctx.fillRect(-st.radius*1.2, -st.radius*0.8, st.radius*2.4, st.radius*1.4);
+                    ctx.fillStyle = '#1a252f';
+                    ctx.beginPath();
+                    ctx.moveTo(-st.radius*0.5, -st.radius*1.0);
+                    ctx.lineTo(st.radius*1.5, -st.radius*1.5);
+                    ctx.lineTo(st.radius*1.5, -st.radius*0.5);
+                    ctx.lineTo(st.radius*0.5, -st.radius*0.3);
+                    ctx.fill();
+                    ctx.strokeStyle = '#555';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-st.radius*1.5, -st.radius*1.0, st.radius*3, st.radius*2.0);
+                } else if (currentVehicle === 'tiv2') {
+                    ctx.fillStyle = st.color;
+                    ctx.fillRect(-st.radius*1.8, -st.radius*1.1, st.radius*3.6, st.radius*2.2);
+                    ctx.fillStyle = st.darkColor;
+                    ctx.fillRect(-st.radius*1.4, -st.radius*0.9, st.radius*2.8, st.radius*1.6);
+                    ctx.fillStyle = '#555';
+                    for (let i = -1; i <= 1; i+=2) {
+                        ctx.fillRect(st.radius*1.8*i, -st.radius*1.1, st.radius*0.4*i, st.radius*2.2);
+                        ctx.fillRect(st.radius*1.8*i, st.radius*0.6, st.radius*0.8*i, st.radius*0.5);
+                    }
+                    ctx.strokeStyle = '#f39c12';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(-st.radius*1.8, -st.radius*1.1, st.radius*3.6, st.radius*2.2);
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.beginPath();
+                    ctx.arc(0, -st.radius*1.4, st.radius*0.6, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                
+                // Колёса (для всех кроме танка)
+                if (currentVehicle !== 'admin') {
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(-st.radius*1.3, -st.radius*1.15, st.radius*0.7, st.radius*0.4);
+                    ctx.fillRect(-st.radius*1.3, st.radius*0.65, st.radius*0.7, st.radius*0.4);
+                    ctx.fillRect(st.radius*0.6, -st.radius*1.15, st.radius*0.7, st.radius*0.4);
+                    ctx.fillRect(st.radius*0.6, st.radius*0.65, st.radius*0.7, st.radius*0.4);
+                }
+                
+                ctx.restore();
+            }
+            
+            function updatePlayer(){
+                if (player.isEvacuating) {
+                    player.evacuationTimer--;
+                    if (player.evacuationTimer <= 0) player.isEvacuating = false;
+                    return;
+                }
+                
+                let mx=joystickX, my=joystickY;
+                if (keys['w'] || keys['arrowup']) my = -1;
+                if (keys['s'] || keys['arrowdown']) my = 1;
+                if (keys['a'] || keys['arrowleft']) mx = -1;
+                if (keys['d'] || keys['arrowright']) mx = 1;
+                
+                if(Math.abs(mx)<0.1) mx=0; if(Math.abs(my)<0.1) my=0;
+                const st=vehicleStats[currentVehicle];
+                let spd=st.speed;
+                if(!isOnRoad(player.x,player.y)) spd*=0.5;
+                player.x+=mx*spd; player.y+=my*spd;
+                if(mx!==0||my!==0) player.angle=Math.atan2(my,mx);
+                player.x=Math.max(player.radius,Math.min(WORLD_W-player.radius,player.x));
+                player.y=Math.max(player.radius,Math.min(WORLD_H-player.radius,player.y));
+                camera.x=player.x-W/2; camera.y=player.y-H/2;
+                camera.x=Math.max(0,Math.min(WORLD_W-W,camera.x));
+                camera.y=Math.max(0,Math.min(WORLD_H-H,camera.y));
+            }
+            
+            function update(){
+                updatePlayer();
+                for(let t of tornados) t.update();
+                frameCounter++;
+                if(frameCounter%60===0 && tornados.length<MAX_TORNADOS) spawnTornado();
+                probes = probes.filter(p => !p.collected || (Date.now()-p.deployed < 1000));
+                probes = probes.filter(p => !p.collected);
+                updateUI();
+            }
+            
+            function draw(){
+                ctx.clearRect(0,0,W,H);
+                drawWorld(ctx, camera.x, camera.y);
+                for(let t of tornados) t.draw(ctx, camera.x, camera.y);
+                for(let p of probes){
+                    const px=p.x-camera.x, py=p.y-camera.y;
+                    ctx.fillStyle='#ff0000'; ctx.beginPath(); ctx.arc(px,py,8,0,Math.PI*2); ctx.fill();
+                    ctx.fillStyle='#fff'; ctx.font='bold 9px "Segoe UI"'; ctx.textAlign='center'; ctx.fillText('📡',px,py-12);
+                }
+                drawPlayer(ctx, camera.x, camera.y);
+                
+                const mmW=120,mmH=90,mmX=W-mmW-8,mmY=8;
+                ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(mmX,mmY,mmW,mmH);
+                ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.strokeRect(mmX,mmY,mmW,mmH);
+                for(let t of tornados){ctx.fillStyle=t.color;ctx.fillRect(mmX+t.x/WORLD_W*mmW-2,mmY+t.y/WORLD_H*mmH-2,4,4);}
+                for(let p of probes){ctx.fillStyle='#f00';ctx.fillRect(mmX+p.x/WORLD_W*mmW-1,mmY+p.y/WORLD_H*mmH-1,3,3);}
+                ctx.fillStyle='#fff';ctx.fillRect(mmX+player.x/WORLD_W*mmW-3,mmY+player.y/WORLD_H*mmH-3,6,6);
+            }
+            
+            function gameLoop(){
+                if (!gameRunning) return;
+                update();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+            
+            function updateUI() {
+                document.getElementById('moneyDisplay').textContent = money;
+                document.getElementById('scoreDisplay').textContent = score;
+                document.getElementById('vehicleDisplay').textContent = vehicleStats[currentVehicle].name;
+                document.getElementById('menuMoney').textContent = money;
+                document.getElementById('shopMoney').textContent = money;
+            }
+            
+            function updateShopUI() {
+                const vehicleList = document.getElementById('vehicleList');
+                vehicleList.innerHTML = '';
+                
+                for (const [key, v] of Object.entries(vehicleStats)) {
+                    if (key === 'admin') continue;
+                    
+                    const card = document.createElement('div');
+                    card.className = 'vehicle-card';
+                    if (currentVehicle === key) card.classList.add('selected');
+                    if (ownedVehicles.includes(key)) card.classList.add('owned');
+                    
+                    let priceHTML = '';
+                    if (ownedVehicles.includes(key)) {
+                        priceHTML = '<span class="vehicle-owned-text">КУПЛЕНО</span>';
+                    } else {
+                        priceHTML = `<span class="vehicle-price">$${v.price.toLocaleString()}</span>`;
+                    }
+                    
+                    card.innerHTML = `
+                        <div class="vehicle-info">
+                            <div class="vehicle-name">${v.name}</div>
+                            <div class="vehicle-stats">Скорость: ${v.speed} | Броня: ${v.armor}</div>
+                            <div class="vehicle-stats">${v.desc}</div>
+                        </div>
+                        ${priceHTML}
+                    `;
+                    
+                    card.addEventListener('click', () => buyVehicle(key));
+                    vehicleList.appendChild(card);
+                }
+            }
+            
+            function buyVehicle(type) {
+                if (ownedVehicles.includes(type)) {
+                    currentVehicle = type;
+                } else if (money >= vehicleStats[type].price) {
+                    money -= vehicleStats[type].price;
+                    ownedVehicles.push(type);
+                    currentVehicle = type;
+                }
+                saveGame();
+                updateUI();
+                updateShopUI();
+            }
+            
+            function startGame() {
+                gameRunning = true;
+                gameScreen.style.display = 'block';
+                menuScreen.style.display = 'none';
+                shopScreen.style.display = 'none';
+                adminScreen.style.display = 'none';
+                resizeCanvas();
+                player.x = WORLD_W/2;
+                player.y = WORLD_H/2;
+                player.isEvacuating = false;
+                player.evacuationTimer = 0;
+                player.radius = vehicleStats[currentVehicle].radius;
+                tornados = [];
+                probes = [];
+                score = 0;
+                frameCounter = 0;
+                for(let i=0;i<5;i++) spawnTornado();
+                updateUI();
+                gameLoop();
+            }
+            
+            function backToMenu() {
+                gameRunning = false;
+                gameScreen.style.display = 'none';
+                shopScreen.style.display = 'none';
+                adminScreen.style.display = 'none';
+                menuScreen.style.display = 'flex';
+                saveGame();
+                updateUI();
+            }
+            
+            function openShop() {
+                menuScreen.style.display = 'none';
+                shopScreen.style.display = 'flex';
+                adminScreen.style.display = 'none';
+                updateShopUI();
+                updateUI();
+            }
+            
+            function openAdmin() {
+                menuScreen.style.display = 'none';
+                shopScreen.style.display = 'none';
+                adminScreen.style.display = 'flex';
+                document.getElementById('adminCode').value = '';
+                document.getElementById('adminControls').style.display = 'none';
+                document.getElementById('adminError').style.display = 'none';
+                document.getElementById('adminMsg').textContent = '';
+                adminLoggedIn = false;
+                updateUI();
+            }
+            
+            // ---- Кнопки ----
+            document.getElementById('playBtn').addEventListener('click', startGame);
+            document.getElementById('shopBtnMenu').addEventListener('click', openShop);
+            document.getElementById('adminBtnMenu').addEventListener('click', openAdmin);
+            document.getElementById('backFromShop').addEventListener('click', backToMenu);
+            document.getElementById('backFromAdmin').addEventListener('click', backToMenu);
+            document.getElementById('menuBtn').addEventListener('click', backToMenu);
+            
+            // ---- Инициализация ----
+            loadGame();
+            generateRoads();
+            generateWorldObjects();
+            updateUI();
+            menuScreen.style.display = 'flex';
+        })();
+    </script>
+</body>
+</html>
